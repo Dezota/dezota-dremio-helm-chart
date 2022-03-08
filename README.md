@@ -2,8 +2,6 @@
 
 You can follow these instructions to install Dremio in a Kubernetes cluster provisioned through a cloud provider or running in an on-premises environment. Supported cloud providers are Amazon Elastic Kubernetes Service (EKS), Google Kubernetes Engine (GKE), and Microsoft Azure Kubernetes Service (AKS).
 
-If you are upgrading from the previous Helm chart for Dremio, please see the [Migrating Helm Chart Versions](./docs/setup/Migrating-Helm-Chart-Versions.md) documentation.
-
 ## Prerequisites
 
 * Ensure that you have an existing Kubernetes cluster.
@@ -12,35 +10,34 @@ If you are upgrading from the previous Helm chart for Dremio, please see the [Mi
 
 ## Procedure
 
-1. Download [the `dremio-cloud-tools` repository](https://github.com/dremio/dremio-cloud-tools/tree/master/charts/dremio_v2).
-1. In a terminal window, change to the `dremio-cloud-tools/charts/dremio_v2/` directory.
-1. Review the default values in the file `values.yaml`, which configures the Dremio installation. If you want to override any of these values, create a file with the `.yaml` extension in this directory, copy into this file the keys for which you want to set non-default values, and then set the values in the file. Making changes in this file allows you to quickly update to the latest version of the chart by copying the file across Helm chart updates. Refer to "[`values.yaml` Reference](./docs/Values-Reference.md)" for details about the settings.
+1. Download [the `dezota-dremio-helm-chart` repository](https://github.com/Dezota/dezota-dremio-helm-chart).
+1. In a terminal window, change to the `dezota-dremio-helm-chart` directory.
+1. Review the default values in the file `values.yaml`, which configures the Dremio installation and make any necessary changes. The current values assume that you are also setting up an internal Minio environment for the S3 distributed store. Updated the S3 access key and secret to your existing Minio setup.   
 1. Review the document "[Important Setup Considerations](./docs/setup/Important-Setup-Considerations.md)" and make any of the listed changes to the values in your `values.local.yaml` file that you think are necessary for your environment.
 1. Install the Helm Chart by running one of these commands from the `charts` directory:
-   * If you are overriding any of the default values that are in the `values.yaml` file, run this command:
 
       ```bash
-      $ helm install <release-name> dremio_v2 -f <file>
+      $ kubectl create namespace dezota-dremio
+      $ ./install.sh
       ```
-      where `<file>` is the name of the file that you are using to override values.
-   * If you are not overriding any of the values in the `values.yaml` file, run this command:
-      ```bash
-      $ helm install <release-name> dremio_v2
-      ```
-
    If the installation takes longer than a few minutes to complete, you can check the status of the installation by using the following command:
 
    ```bash
-   $ kubectl get pods
+   $ kubectl get pods --namespace dezota-dremio
    ```
 
    If a pod remains in **Pending** state for more than a few minutes, run the following command to view its status to check for issues, such as insufficient resources for scheduling:
 
    ```bash
-   $ kubectl describe pods <pod-name>
+   $ kubectl describe pods --namespace dezota-dremio
    ```
 
-   If the events at the bottom of the output mention insufficient CPU or memory, either adjust the values in your `values.local.yaml` and restart the process or add more resources to your Kubernetes cluster.
+   If the events at the bottom of the output mention insufficient CPU or memory, either adjust the values in your `values.yaml` and restart the process or add more resources to your Kubernetes cluster.
+
+   ```bash
+   $ ./upgrade.sh
+   ```
+   
 
    When all of the pods are in the **Ready** state, the installation is complete.
 
@@ -53,7 +50,7 @@ Now that you've installed the Dremio Helm chart, you can get the HTTP addresses 
 Run the following command to use the `service dremio-client` in Kubernetes to find the host for the Dremio UI:
 
 ```
-$ kubectl get services dremio-client
+$ kubectl get services dremio-client  --namespace dezota-dremio
 ```
 
 * If the value in the `TYPE` column of the output is `LoadBalancer`, access the Dremio UI through the address in the `EXTERNAL_IP` column and port 9047.

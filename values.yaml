@@ -8,7 +8,7 @@
 # automatically during redeployments and may negatively impact
 # the cluster.
 image: dezota/dremio-oss-with-ext
-imageTag: 20.1.0-5
+imageTag: 20.1.0-6
 
 # Annotations, labels, node selectors, and tolerations
 #
@@ -286,7 +286,7 @@ distStorage:
   # azure: ADLS Gen 1, additional parameters required, see "azure" section.
   # azureStorage: Azure Storage Gen2, additional paramters required, see "azureStorage" section.
   # gcp: Google Cloud Storage, additional parameters required, see "gcp" section.
-  type: "local"
+  type: "aws"
 
   # Google Cloud Storage
   #
@@ -336,15 +336,15 @@ distStorage:
   #       Dremio does not support using an K8s service account based IAM role.
   # credentials: If using accessKeySecret authentication, uncomment the credentials section below.
   aws:
-    bucketName: "AWS Bucket Name"
+    bucketName: "dezota-dremio"
     path: "/"
-    authentication: "metadata"
+    authentication: "accessKeySecret"
     # If using accessKeySecret for authentication against S3, uncomment the lines below and use the values
     # to configure the appropriate credentials.
     #
-    #credentials:
-    #  accessKey: "AWS Access Key"
-    #  secret: "AWS Secret"
+    credentials:
+      accessKey: "wauolLvmZL1KkskT"
+      secret: "JYnQ6VWYSQvzF1JWG39Vl4BZNxBbO1Hg"
     #
     # If using awsProfile for authentication against S3, uncomment the lines below and use the values
     # to choose the appropriate profile.
@@ -356,7 +356,27 @@ distStorage:
     # Use the extra properties block to provide additional parameters to configure the distributed
     # storage in the generated core-site.xml file.
     #
-    #extraProperties: |
+    extraProperties: |
+      <property>
+          <name>fs.s3a.endpoint</name>
+          <description>Endpoint can either be an IP or a hostname, where Minio server is running . However the endpoint value cannot contain the http(s) prefix. E.g. 175.1.2.3:9000 is a valid endpoint. </description>
+          <value>minio.dezota-minio.svc.cluster.local:443</value>
+      </property>
+      <property>
+          <name>fs.s3a.path.style.access</name>
+          <description>Value has to be set to true.</description>
+          <value>true</value>
+      </property>
+      <property>
+          <name>dremio.s3.compat</name>
+          <description>Value has to be set to true.</description>
+          <value>true</value>
+      </property>
+      <property>
+          <name>fs.s3a.connection.ssl.enabled</name>
+          <description>Value can either be true or false, set to true to use SSL with a secure Minio server.</description>
+          <value>true</value>
+      </property>
     #  <property>
     #    <name></name>
     #    <value></value>
